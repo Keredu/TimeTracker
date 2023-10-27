@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Activity Options</title>
+</head>
+<body>
+    <h1>Choose an Activity Option</h1>
+    <ul>
+        <li><a href="#" id="start_new_activity">Start New Activity</a></li>
+        <li><a href="#" id="add_previous_activity">Add Previous Activity</a></li>
+        <li><a href="#" id="page_pomodoro">Start Pomodoro Timer</a></li>
+    </ul>
+
+    <!-- Start New Activity Form -->
+    <div id="newActivityForm" style="display: none;">
+        <h2>Start New Activity</h2>
+        <form id="activityForm">
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" name="topic" required><br><br>
+            
+            <label for="subtopic">Subtopic:</label>
+            <input type="text" id="subtopic" name="subtopic" required><br><br>
+
+            <input type="submit" value="Start">
+        </form>
+    </div>
+
+    <!-- Add Previous Activity Form -->
+    <div id="addPreviousActivityForm" style="display: none;">
+        <h2>Add Previous Activity</h2>
+        <form id="previousActivityForm">
+            <label for="previousTopic">Topic:</label>
+            <input type="text" id="previousTopic" name="previousTopic" required><br><br>
+            
+            <label for="previousSubtopic">Subtopic:</label>
+            <input type="text" id="previousSubtopic" name="previousSubtopic" required><br><br>
+
+            <label for="startDate">Start Date and Time:</label>
+            <input type="datetime-local" id="startDate" name="startDate" required><br><br>
+
+            <label for="endDate">End Date and Time:</label>
+            <input type="datetime-local" id="endDate" name="endDate" required><br><br>
+
+            <input type="submit" value="Add">
+        </form>
+    </div>
+
+    <!-- Start Pomodoro Timer Section -->
+    <div id="pomodoroTimer" style="display: none;">
+        <h2>Pomodoro Timer</h2>
+        <label for="pomodoroTopic">Topic:</label>
+        <input type="text" id="pomodoroTopic" name="pomodoroTopic" required><br><br>
+        <label for="pomodoroSubtopic">Subtopic:</label>
+        <input type="text" id="pomodoroSubtopic" name="pomodoroSubtopic" required><br><br>
+        <p>Time Remaining: <span id="timerDisplay">25:00</span></p>
+        <button id="startPomodoro">Start</button>
+        <button id="stopPomodoro">Stop</button>
+    </div>
+
+
+    <div id="activityStatus" style="display: none;">
+        <h2>Activity in Progress</h2>
+        <p>Topic: <span id="currentTopic"></span></p>
+        <p>Subtopic: <span id="currentSubtopic"></span></p>
+        <p>Start Time: <span id="startTime"></span></p>
+        <button id="stopActivity">Stop</button>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
