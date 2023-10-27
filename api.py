@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
+from typing import List, Optional  # Import the Optional type
 
 app = FastAPI()
 
@@ -15,14 +16,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
 class ActivityInput(BaseModel):
-    topic: str
-    subtopic: str
-    start_date: str
-    end_date: str
+    id: Optional[int] = None
+    topic: Optional[str] = None 
+    subtopic: Optional[str] = None 
+    start_date: Optional[str] = None 
+    end_date: Optional[str] = None 
 
 def create_activity_table():
     conn = sqlite3.connect("activity_tracker.db")
@@ -38,14 +37,66 @@ def create_activity_table():
     ''')
     conn.commit()
 
-def insert_activity(topic, subtopic, start_date, end_date):
+def insert_activity(topic, subtopic, start_date):
     conn = sqlite3.connect("activity_tracker.db")
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO activities (start_date, end_date, topic, subtopic)
-    VALUES (?, ?, ?, ?);
-    ''', (start_date, end_date, topic, subtopic))
+    INSERT INTO activities (start_date, topic, subtopic)
+    VALUES (?, ?, ?);
+    ''', (start_date, topic, subtopic))
     conn.commit()
+
+    # Get the ID of the last inserted row
+    inserted_id = cursor.lastrowid
+    return inserted_id
+
+def finish_activity_in_db(activity_id, end_date):
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT id FROM activities WHERE id = ?', (activity_id,))
+    activity = cursor.fetchone()
+
+    if not activity:
+        raise HTTPException(status_code=404, detail=f"Activity with id {activity_id} not found.")
+
+    cursor.execute('UPDATE activities SET end_date = ? WHERE id = ?', (end_date, activity_id))
+    conn.commit()
+
+from typing import List
+
+def get_not_done_activities_from_db():
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM activities WHERE end_date IS NULL')
+    not_done_activities = cursor.fetchall()
+
+    activities = []
+    for row in not_done_activities:
+        activity = {
+            "id": row[0],
+            "start_date": row[1],
+            "end_date": row[2],
+            "topic": row[3],
+            "subtopic": row[4]
+        }
+        activities.append(activity)
+
+    return activities
+
+def delete_activity_from_db(activity_id):
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT id FROM activities WHERE id = ?', (activity_id,))
+    activity = cursor.fetchone()
+
+    if not activity:
+        raise HTTPException(status_code=404, detail=f"Activity with id {activity_id} not found.")
+
+    cursor.execute('DELETE FROM activities WHERE id = ?', (activity_id,))
+    conn.commit()
+
 
 def list_activities(start_date, end_date):
     conn = sqlite3.connect("activity_tracker.db")
@@ -68,14 +119,41 @@ def start_new_activity(activity_input: ActivityInput):
         topic = activity_input.topic
         subtopic = activity_input.subtopic
         start_date = activity_input.start_date
-        end_date = activity_input.end_date
 
-        if topic and subtopic and start_date and end_date:
-            insert_activity(topic, subtopic, start_date, end_date)
-            conn.commit()  # Commit the transaction after inserting data
-            return {"message": "Activity inserted successfully."}
+        if topic and subtopic and start_date:
+            inserted_id = insert_activity(topic, subtopic, start_date)
+            return {"message": "Activity inserted successfully.", "id": inserted_id}
         else:
             raise HTTPException(status_code=400, detail="Missing required fields in request data.")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/finish_activity/{activity_id}")
+def finish_activity(activity_id: int, activity_input: ActivityInput):
+    print(activity_id)
+    try:
+        end_date = activity_input.end_date
+        finish_activity_in_db(activity_id, end_date)
+        return {"message": f"Activity {activity_id} has been updated with end date {end_date}"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/get_not_dones", response_model=List[ActivityInput])
+def get_not_dones():
+    try:
+        not_done_activities = get_not_done_activities_from_db()
+        return not_done_activities
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/delete_activity/{activity_id}")
+def delete_activity(activity_id: int):
+    try:
+        delete_activity_from_db(activity_id)
+        return {"message": f"Activity {activity_id} has been deleted"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))

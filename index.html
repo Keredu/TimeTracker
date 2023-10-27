@@ -9,6 +9,7 @@
         <li><a href="#" id="start_new_activity">Start New Activity</a></li>
         <li><a href="#" id="add_previous_activity">Add Previous Activity</a></li>
         <li><a href="#" id="page_pomodoro">Start Pomodoro Timer</a></li>
+        <li><a href="#" id="list_not_dones">List Not Dones</a></li>
     </ul>
 
     <!-- Start New Activity Form -->
@@ -63,7 +64,14 @@
         <p>Topic: <span id="currentTopic"></span></p>
         <p>Subtopic: <span id="currentSubtopic"></span></p>
         <p>Start Time: <span id="startTime"></span></p>
-        <button id="stopActivity">Stop</button>
+        <button id="stopActivity" type="button">Stop</button>
+    </div>
+
+    <div id="listNotDones" style="display: none;">
+        <h2>List Not Dones</h2>
+        <ul id="notDoneActivities">
+            <!-- List of not completed activities will be dynamically added here -->
+        </ul>
     </div>
     
     <script src="script.js"></script>
