@@ -148,33 +148,114 @@ document.getElementById("stopActivity").addEventListener("click", function() {
 
 // =======================================================================================
 
-// JavaScript to toggle the display of the Add Previous Activity form
-document.getElementById("add_previous_activity").addEventListener("click", function() {
-    document.getElementById("addPreviousActivityForm").style.display = "block";
-    document.getElementById("activityStatus").style.display = "none";
-    document.getElementById("newActivityForm").style.display = "none";
+// Function to populate the "Topic" dropdown with values from the API
+function populateTopicsPrevious() {
+    const topicSelect = document.getElementById("previousTopic");
+    topicSelect.innerHTML = ""; // Clear existing options
+
+    // Fetch topics from the API
+    fetch('http://localhost:8000/get_topics')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(topic => {
+                const option = document.createElement("option");
+                option.value = topic.topic_name; // Set the value to topic_name
+                option.text = topic.topic_name; // Display the topic_name in the dropdown
+                option.dataset.id = topic.id; // Store the id in the data-id attribute
+                topicSelect.add(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Function to populate the "Subtopic" dropdown with values based on the selected "Topic" id
+function populateSubtopicsPrevious(selectedTopicId) {
+    const subtopicSelect = document.getElementById("previousSubtopic");
+    subtopicSelect.innerHTML = ""; // Clear existing options
+
+    // Fetch subtopics based on the selected "Topic" id from the API
+    fetch(`http://localhost:8000/get_subtopics/${selectedTopicId}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(subtopic => {
+                const option = document.createElement("option");
+                option.value = subtopic.subtopic_name; // Set the value to subtopic_name
+                option.text = subtopic.subtopic_name; // Display the subtopic_name in the dropdown
+                subtopicSelect.add(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Add an event listener to the "Topic" dropdown to get the selected topic's id and populate subtopics
+document.getElementById("previousTopic").addEventListener("change", function() {
+    const selectedTopicId = this.options[this.selectedIndex].dataset.id;
+    console.log("Selected Topic ID: " + selectedTopicId);
+
+    // Populate the "Subtopic" dropdown with values based on the selected "Topic" id
+    populateSubtopicsPrevious(selectedTopicId);
 });
 
-// JavaScript to handle the submission of the Add Previous Activity form
+// Function to handle the submission of the "Add Previous Activity" form
 document.getElementById("previousActivityForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    
-    // Handle the addition of the previous activity (you can store this data as needed)
-    const previousTopic = document.getElementById("previousTopic").value;
-    const previousSubtopic = document.getElementById("previousSubtopic").value;
+
+    // Get the selected "Topic" and "Subtopic"
+    const selectedTopic = document.getElementById("previousTopic").value;
+    const selectedSubtopic = document.getElementById("previousSubtopic").value;
+
+    // Get the "Start Date and Time" and "End Date and Time"
     const startDate = document.getElementById("startDate").value;
     const endDate = document.getElementById("endDate").value;
-    
-    alert("Previous activity added:\nTopic: " + previousTopic +
-          "\nSubtopic: " + previousSubtopic +
+
+    // Prepare the previous activity data for sending to the API
+    const previousActivityData = {
+        topic: selectedTopic,
+        subtopic: selectedSubtopic,
+        start_date: startDate,
+        end_date: endDate
+    };
+
+    // Send the data to the FastAPI server for storing the previous activity
+    fetch('http://localhost:8000/add_activity', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(previousActivityData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Previous Activity data sent successfully.');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+    alert("Previous activity added:\nTopic: " + selectedTopic +
+          "\nSubtopic: " + selectedSubtopic +
           "\nStart Date and Time: " + startDate +
           "\nEnd Date and Time: " + endDate);
-    
-    // Reset the form
+
+    // Reset the form fields
     document.getElementById("previousTopic").value = "";
     document.getElementById("previousSubtopic").value = "";
     document.getElementById("startDate").value = "";
     document.getElementById("endDate").value = "";
+});
+
+// Add a click event listener to the "Add Previous Activity" button
+document.getElementById("add_previous_activity").addEventListener("click", function() {
+    document.getElementById("addPreviousActivityForm").style.display = "block";
+    document.getElementById("activityStatus").style.display = "none";
+    document.getElementById("newActivityForm").style.display = "none";
+
+    // Populate the "Topic" dropdown with values from the API
+    populateTopicsPrevious();
 });
 
 // =======================================================================================

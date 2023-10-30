@@ -199,7 +199,7 @@ def start_new_activity(activity_input: ActivityInput):
         topic = activity_input.topic
         subtopic = activity_input.subtopic
         start_date = activity_input.start_date
-
+        print(activity_input)
         if topic and subtopic and start_date:
             inserted_id = insert_activity(topic, subtopic, start_date)
             return {"message": "Activity inserted successfully.", "id": inserted_id}

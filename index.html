@@ -31,20 +31,21 @@
         <h2>Add Previous Activity</h2>
         <form id="previousActivityForm">
             <label for="previousTopic">Topic:</label>
-            <input type="text" id="previousTopic" name="previousTopic" required><br><br>
-            
+            <select id="previousTopic" name="previousTopic" required></select><br><br>
+
             <label for="previousSubtopic">Subtopic:</label>
-            <input type="text" id="previousSubtopic" name="previousSubtopic" required><br><br>
+            <select id="previousSubtopic" name="previousSubtopic" required></select><br><br>
 
             <label for="startDate">Start Date and Time:</label>
-            <input type="datetime-local" step="1" id="startDate" name="startDate" required><br><br>
+            <input type="datetime-local" id="startDate" name="startDate" required><br><br>
 
             <label for="endDate">End Date and Time:</label>
-            <input type="datetime-local" step="1" id="endDate" name="endDate" required><br><br>
+            <input type="datetime-local" id="endDate" name="endDate" required><br><br>
 
-            <input type="submit" value="Add">
+            <input type="submit" value="Add Previous Activity">
         </form>
-    </div>
+</div>
+
 
     <!-- Start Pomodoro Timer Section -->
     <div id="pomodoroTimer" style="display: none;">
