@@ -16,6 +16,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class Topic(BaseModel):
+    id: int
+    topic_name: str
+
+class Subtopic(BaseModel):
+    id: int
+    topic_id: int
+    subtopic_name: str
+
 class ActivityInput(BaseModel):
     id: Optional[int] = None
     topic: Optional[str] = None 
@@ -36,6 +45,43 @@ def create_activity_table():
     );
     ''')
     conn.commit()
+
+def create_topic_table():
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS topics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic_name TEXT
+    );
+    ''')
+    conn.commit()
+    conn.close()
+
+def create_subtopic_table():
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS subtopics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic_id INTEGER,
+        subtopic_name TEXT,
+        FOREIGN KEY (topic_id) REFERENCES topics (id)
+    );
+    ''')
+    conn.commit()
+    conn.close()
+
+def populate_topics_and_subtopics():
+    create_topic("Programming")
+    create_topic("Science")
+    create_topic("History")
+    
+    create_subtopic(1, "Python")
+    create_subtopic(1, "Java")
+    create_subtopic(2, "Biology")
+    create_subtopic(2, "Physics")
+    create_subtopic(3, "Ancient Civilizations")
 
 def insert_activity(topic, subtopic, start_date):
     conn = sqlite3.connect("activity_tracker.db")
@@ -62,6 +108,37 @@ def finish_activity_in_db(activity_id, end_date):
 
     cursor.execute('UPDATE activities SET end_date = ? WHERE id = ?', (end_date, activity_id))
     conn.commit()
+
+def get_topics_from_db():
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM topics")
+    topics = cursor.fetchall()
+    conn.close()
+    return [Topic(id=topic[0], topic_name=topic[1]) for topic in topics]
+
+def get_subtopics_by_topic_id(topic_id):
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM subtopics WHERE topic_id=?", (topic_id,))
+    subtopics = cursor.fetchall()
+    conn.close()
+    return [Subtopic(id=subtopic[0], topic_id=subtopic[1], subtopic_name=subtopic[2]) for subtopic in subtopics]
+
+
+def create_topic(topic_name):
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO topics (topic_name) VALUES (?)", (topic_name,))
+    conn.commit()
+    conn.close()
+
+def create_subtopic(topic_id, subtopic_name):
+    conn = sqlite3.connect("activity_tracker.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO subtopics (topic_id, subtopic_name) VALUES (?, ?)", (topic_id, subtopic_name))
+    conn.commit()
+    conn.close()
 
 from typing import List
 
@@ -112,6 +189,9 @@ def list_activities(start_date, end_date):
 @app.on_event("startup")
 async def startup_event():
     create_activity_table()
+    create_topic_table()
+    create_subtopic_table()
+    populate_topics_and_subtopics()
 
 @app.post("/add_activity")
 def start_new_activity(activity_input: ActivityInput):
@@ -158,6 +238,24 @@ def delete_activity(activity_id: int):
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/get_topics", response_model=List[Topic])
+def get_topics():
+    try:
+        topics = get_topics_from_db()
+        return topics
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/get_subtopics/{topic_id}", response_model=List[Subtopic])
+def get_subtopics(topic_id: int):
+    try:
+        subtopics = get_subtopics_by_topic_id(topic_id)
+        return subtopics
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @app.post("/list_activities")
 def list_user_activities(start_date: str, end_date: str):
     try:

@@ -1,9 +1,65 @@
 let activityStartTime;
 
+// Function to populate the "Topic" dropdown with values from the API
+function populateTopics() {
+    const topicSelect = document.getElementById("topic");
+    topicSelect.innerHTML = ""; // Clear existing options
+
+    // Fetch topics from the API
+    fetch('http://localhost:8000/get_topics')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(topic => {
+                const option = document.createElement("option");
+                option.value = topic.topic_name; // Set the value to topic_name
+                option.text = topic.topic_name; // Display the topic_name in the dropdown
+                option.dataset.id = topic.id; // Store the id in the data-id attribute
+                topicSelect.add(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Function to populate the "Subtopic" dropdown with values based on the selected "Topic"
+function populateSubtopics(selectedTopic) {
+    const subtopicSelect = document.getElementById("subtopic");
+    subtopicSelect.innerHTML = ""; // Clear existing options
+
+    // Fetch subtopics based on the selected "Topic" from the API
+    fetch(`http://localhost:8000/get_subtopics/${selectedTopic}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(subtopic => {
+                const option = document.createElement("option");
+                option.value = subtopic.subtopic_name; // Set the value to subtopic_name
+                option.text = subtopic.subtopic_name; // Display the subtopic_name in the dropdown
+                subtopicSelect.add(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+// Add an event listener to the "Topic" dropdown to get the selected topic's id and populate subtopics
+document.getElementById("topic").addEventListener("change", function() {
+    const selectedTopicId = this.options[this.selectedIndex].dataset.id;
+    console.log("Selected Topic ID: " + selectedTopicId);
+
+    // Populate the "Subtopic" dropdown with values based on the selected "Topic" id
+    populateSubtopics(selectedTopicId);
+});
+
+
 // JavaScript to toggle the display of the Start New Activity form and handle form submission
 document.getElementById("start_new_activity").addEventListener("click", function() {
     document.getElementById("newActivityForm").style.display = "block";
     document.getElementById("activityStatus").style.display = "none";
+
+    // Populate the "Topic" dropdown with values from the API
+    populateTopics();
 });
 
 let activityId; // Declare a variable to store the activity ID
