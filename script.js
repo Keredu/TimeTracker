@@ -207,8 +207,6 @@ function updateNotDonesList(notDones) {
     notDones.forEach(activity => {
         const listItem = document.createElement("li");
         listItem.innerHTML = `ID: ${activity.id}, Topic: ${activity.topic}, Subtopic: ${activity.subtopic}, Start Date: ${activity.start_date}`;
-
-
         // Create a delete button for each activity
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
@@ -216,9 +214,17 @@ function updateNotDonesList(notDones) {
             deleteActivity(activity.id); // Call the deleteActivity function with the activity ID
         });
 
-        // Append the delete button to the list item
+        // Create an edit button for each activity
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => {
+            editActivity(activity); // Call the editActivity function with the activity ID
+        });
+
+        // Append the delete and edit buttons to the list item
         listItem.appendChild(deleteButton);
-        
+        listItem.appendChild(editButton);
+
         notDoneActivitiesList.appendChild(listItem);
     });
 
@@ -245,6 +251,72 @@ function deleteActivity(activityId) {
         console.error('Error:', error);
     });
 }
+
+// Function to edit an activity
+function editActivity(activity) {
+    // Hide the listNotDones section
+    document.getElementById("listNotDones").style.display = "none";
+    
+    // Display the edit form
+    const editForm = document.getElementById("addPreviousActivityForm");
+    editForm.style.display = "block";
+    document.getElementById("activityStatus").style.display = "none";
+
+    // Format the start_date for the edit form
+    const formattedStartDate = activity.start_date.split('T')[0] + 'T' + activity.start_date.split('T')[1].split('.')[0];
+    
+    // Populate the form fields with the activity details
+    document.getElementById("previousTopic").value = activity.topic;
+    document.getElementById("previousSubtopic").value = activity.subtopic;
+    document.getElementById("startDate").value = formattedStartDate;
+    document.getElementById("endDate").value = activity.end_date || ''; // Set the value of end_date or an empty string
+
+
+    // Add an event listener to handle the submission of the edit form
+    editForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        // Get the edited data from the form
+        const editedEndDate = document.getElementById("endDate").value;
+
+        // Update the activity's end_date property with the edited data
+        activity.end_date = editedEndDate;
+
+        // Hide the edit form
+        editForm.style.display = "none";
+
+        // Implement the code to update the activity on the server (e.g., using a fetch request)
+        // Send the edited data to the server for updating the activity
+        const editedActivityData = {
+            id: activity.id,
+            end_date: editedEndDate
+        };
+
+        // Make a fetch request to update the activity on the server
+        fetch(`http://localhost:8000/finish_activity/${activity.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(editedActivityData)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Activity edited successfully.');
+                // Refresh the list of not completed activities after editing
+                fetchNotDones();
+            } else {
+                console.error('Failed to edit the activity.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+}
+
+
+
 
 // Function to fetch the list of not completed activities
 function fetchNotDones() {
