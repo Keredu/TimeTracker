@@ -18,12 +18,12 @@ app.add_middleware(
 
 class Topic(BaseModel):
     id: int
-    topic_name: str
+    name: str
 
 class Subtopic(BaseModel):
     id: int
     topic_id: int
-    subtopic_name: str
+    name: str
 
 class ActivityInput(BaseModel):
     id: Optional[int] = None
@@ -52,7 +52,7 @@ def create_topic_table():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS topics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        topic_name TEXT
+        name TEXT
     );
     ''')
     conn.commit()
@@ -65,7 +65,7 @@ def create_subtopic_table():
     CREATE TABLE IF NOT EXISTS subtopics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         topic_id INTEGER,
-        subtopic_name TEXT,
+        name TEXT,
         FOREIGN KEY (topic_id) REFERENCES topics (id)
     );
     ''')
@@ -115,7 +115,7 @@ def get_topics_from_db():
     cursor.execute("SELECT * FROM topics")
     topics = cursor.fetchall()
     conn.close()
-    return [Topic(id=topic[0], topic_name=topic[1]) for topic in topics]
+    return [Topic(id=topic[0], name=topic[1]) for topic in topics]
 
 def get_subtopics_by_topic_id(topic_id):
     conn = sqlite3.connect("activity_tracker.db")
@@ -123,20 +123,20 @@ def get_subtopics_by_topic_id(topic_id):
     cursor.execute("SELECT * FROM subtopics WHERE topic_id=?", (topic_id,))
     subtopics = cursor.fetchall()
     conn.close()
-    return [Subtopic(id=subtopic[0], topic_id=subtopic[1], subtopic_name=subtopic[2]) for subtopic in subtopics]
+    return [Subtopic(id=subtopic[0], topic_id=subtopic[1], name=subtopic[2]) for subtopic in subtopics]
 
 
-def create_topic(topic_name):
+def create_topic(name):
     conn = sqlite3.connect("activity_tracker.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO topics (topic_name) VALUES (?)", (topic_name,))
+    cursor.execute("INSERT INTO topics (name) VALUES (?)", (name,))
     conn.commit()
     conn.close()
 
-def create_subtopic(topic_id, subtopic_name):
+def create_subtopic(topic_id, name):
     conn = sqlite3.connect("activity_tracker.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO subtopics (topic_id, subtopic_name) VALUES (?, ?)", (topic_id, subtopic_name))
+    cursor.execute("INSERT INTO subtopics (topic_id, name) VALUES (?, ?)", (topic_id, name))
     conn.commit()
     conn.close()
 
