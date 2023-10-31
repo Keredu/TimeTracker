@@ -199,7 +199,7 @@ document.getElementById("add_previous_activity").addEventListener("click", funct
 
 let pomodoroInterval;
 let pomodoroStartTime;
-let pomodoroDuration = 3; // 25 minutes in seconds
+let pomodoroDuration = 1500; // 25 minutes in seconds
 let pomodoroTopic;
 let pomodoroSubtopic;
 
@@ -229,6 +229,32 @@ document.getElementById("startPomodoro").addEventListener("click", function () {
         document.getElementById("pomodoroTopic").disabled = true;
         document.getElementById("pomodoroSubtopic").disabled = true;
         document.getElementById("startPomodoro").disabled = true;
+
+        // Send data to the API when Pomodoro is started
+        const pomodoroStartData = {
+            topic: pomodoroTopic,
+            subtopic: pomodoroSubtopic,
+            start_date: pomodoroStartTime.toISOString()
+        };
+
+        // Make a fetch request to add the Pomodoro activity
+        fetch('http://localhost:8000/add_activity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pomodoroStartData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Store the ID of the created Pomodoro
+                pomodoroId = data.id;
+                // Success handling, if needed
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
         startPomodoroTimer();
     } else {
         alert("Please enter Pomodoro Topic and Pomodoro Subtopic.");
@@ -237,16 +263,14 @@ document.getElementById("startPomodoro").addEventListener("click", function () {
 
 document.getElementById("stopPomodoro").addEventListener("click", function () {
     stopPomodoroTimer();
-    displayPomodoroActivityInfo();
-    resetPomodoroTimer();
 });
+
+let pomodoroId;
 
 function startPomodoroTimer() {
     pomodoroInterval = setInterval(function () {
         if (pomodoroDuration <= 0) {
             stopPomodoroTimer();
-            displayPomodoroActivityInfo();
-            resetPomodoroTimer();
         } else {
             updatePomodoroTimerDisplay();
             pomodoroDuration--;
@@ -256,6 +280,31 @@ function startPomodoroTimer() {
 
 function stopPomodoroTimer() {
     clearInterval(pomodoroInterval);
+
+    // Send data to the API when Pomodoro is finished
+    const endTime = new Date();
+    const pomodoroFinishData = {
+        end_date: endTime.toISOString()
+    };
+
+    // Make a fetch request to finish the Pomodoro activity
+    fetch(`http://localhost:8000/finish_activity/${pomodoroId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pomodoroFinishData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Success handling, if needed
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+    displayPomodoroActivityInfo();
+    resetPomodoroTimer();
 }
 
 function resetPomodoroTimer() {
