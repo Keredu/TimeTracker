@@ -342,18 +342,15 @@ function editActivity(activity) {
     document.getElementById("listNotDones").style.display = "none";
     
     // Display the edit form
-    const editForm = document.getElementById("addPreviousActivityForm");
+    const editForm = document.getElementById("editActivityForm");
     editForm.style.display = "block";
     document.getElementById("activityStatus").style.display = "none";
-
-    // Format the start_date for the edit form
-    const formattedStartDate = activity.start_date.split('T')[0] + 'T' + activity.start_date.split('T')[1].split('.')[0];
     
     // Populate the form fields with the activity details
-    document.getElementById("previousTopic").value = activity.topic;
-    document.getElementById("previousSubtopic").value = activity.subtopic;
-    document.getElementById("startDate").value = formattedStartDate;
-    document.getElementById("endDate").value = activity.end_date || ''; // Set the value of end_date or an empty string
+    document.getElementById("editTopic").value = activity.topic;
+    document.getElementById("editSubtopic").value = activity.subtopic;
+    document.getElementById("editStartDate").textContent = activity.start_date;
+    document.getElementById("editEndDate").value = activity.end_date || ''; // Set the value of end_date or an empty string
 
 
     // Add an event listener to handle the submission of the edit form
@@ -361,7 +358,7 @@ function editActivity(activity) {
         e.preventDefault();
 
         // Get the edited data from the form
-        const editedEndDate = document.getElementById("endDate").value;
+        const editedEndDate = document.getElementById("editEndDate").value;
 
         // Update the activity's end_date property with the edited data
         activity.end_date = editedEndDate;

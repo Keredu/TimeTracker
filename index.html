@@ -76,6 +76,26 @@
             <!-- List of not completed activities will be dynamically added here -->
         </ul>
     </div>
+
+    <!-- Edit Activity Form -->
+    <div id="editActivityForm" style="display: none;">
+        <h2>Edit Activity</h2>
+        <form class="editActivityForm">
+            <label for="topic">Topic:</label>
+            <input type="text" class="topic" id="editTopic" name="topic" readonly="readonly"><br><br>
+
+            <label for="subtopic">Subtopic:</label>
+            <input type="text" class="subtopic" id="editSubtopic" name="subtopic" readonly="readonly"><br><br>
+
+            <label for="startDate">Start Date and Time:</label>
+            <div class="startDateDisplay" id="editStartDate"></div>
+
+            <label for="endDate">End Date and Time:</label>
+            <input type="datetime-local" class="endDate" id="editEndDate" name="endDate"><br><br>
+
+            <input type="submit" value="Save Changes">
+        </form>
+    </div>
     
     <script src="script.js"></script>
 </body>
