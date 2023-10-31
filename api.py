@@ -83,13 +83,13 @@ def populate_topics_and_subtopics():
     create_subtopic(2, "Physics")
     create_subtopic(3, "Ancient Civilizations")
 
-def insert_activity(topic, subtopic, start_date):
+def insert_activity(topic, subtopic, start_date, end_date):
     conn = sqlite3.connect("activity_tracker.db")
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO activities (start_date, topic, subtopic)
-    VALUES (?, ?, ?);
-    ''', (start_date, topic, subtopic))
+    INSERT INTO activities (start_date, end_date, topic, subtopic)
+    VALUES (?, ?, ?, ?);
+    ''', (start_date, end_date, topic, subtopic))
     conn.commit()
 
     # Get the ID of the last inserted row
@@ -199,9 +199,9 @@ def start_new_activity(activity_input: ActivityInput):
         topic = activity_input.topic
         subtopic = activity_input.subtopic
         start_date = activity_input.start_date
-        print(activity_input)
+        end_date = activity_input.end_date
         if topic and subtopic and start_date:
-            inserted_id = insert_activity(topic, subtopic, start_date)
+            inserted_id = insert_activity(topic, subtopic, start_date, end_date)
             return {"message": "Activity inserted successfully.", "id": inserted_id}
         else:
             raise HTTPException(status_code=400, detail="Missing required fields in request data.")
