@@ -4,8 +4,19 @@ from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
 from typing import List, Optional  # Import the Optional type
+import os
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not os.path.exists("activity_tracker.db"):
+        create_activity_table()
+        create_topic_table()
+        create_subtopic_table()
+        populate_topics_and_subtopics()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware with appropriate configuration
 app.add_middleware(
@@ -185,13 +196,6 @@ def list_activities(start_date, end_date):
     ''', (start_date, end_date))
     activities = cursor.fetchall()
     return activities
-
-@app.on_event("startup")
-async def startup_event():
-    create_activity_table()
-    create_topic_table()
-    create_subtopic_table()
-    populate_topics_and_subtopics()
 
 @app.post("/add_activity")
 def start_new_activity(activity_input: ActivityInput):
