@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
-from datetime import datetime
 from typing import List, Optional  # Import the Optional type
 import os
 from contextlib import asynccontextmanager
